@@ -1,3 +1,4 @@
+/* simple_shell.c */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,70 +6,103 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+extern char **environ;
+
+int main(int argc, char **argv)
 {
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t nread;
-    char *args[64];
-    pid_t pid;
-    int status;
-    size_t i;
-    char *tok;
+	char *line, *path, *path_copy, *token, *cmd_path;
+	char *args[64];
+	size_t len;
+	ssize_t nread;
+	pid_t pid;
+	int status, i;
+	(void)argc;
+	(void)argv;
 
-    while (1)
-    {
-        /* show prompt only if in interactive mode */
-        if (isatty(STDIN_FILENO))
-            write(STDOUT_FILENO, "#cisfun$ ", 9);
+	line = NULL;
+	len = 0;
 
-        /* read user input */
-        nread = getline(&line, &len, stdin);
-        if (nread == -1)
-        {
-            if (isatty(STDIN_FILENO))
-                write(STDOUT_FILENO, "\n", 1);
-            break;
-        }
+	while (1)
+	{
+		if (isatty(STDIN_FILENO))
+			write(STDOUT_FILENO, "#cisfun$ ", 9);
 
-        /* remove trailing newline */
-        if (nread > 0 && line[nread - 1] == '\n')
-            line[nread - 1] = '\0';
+		nread = getline(&line, &len, stdin);
+		if (nread == -1)
+			break;
 
-        /* tokenize input line */
-        i = 0;
-        tok = strtok(line, " \t");
-        while (tok != NULL && i < 63)
-        {
-            args[i++] = tok;
-            tok = strtok(NULL, " \t");
-        }
-        args[i] = NULL;
+		if (nread > 0 && line[nread - 1] == '\n')
+			line[nread - 1] = '\0';
 
-        /* if empty command, continue */
-        if (args[0] == NULL)
-            continue;
+		/* tokenize input */
+		args[0] = strtok(line, " \t");
+		i = 0;
+		while (args[i] != NULL && i < 63)
+		{
+			i++;
+			args[i] = strtok(NULL, " \t");
+		}
+		args[i] = NULL;
 
-        /* fork and execute */
-        pid = fork();
-        if (pid == -1)
-        {
-            perror("fork");
-            continue;
-        }
-        if (pid == 0)
-        {
-            execve(args[0], args, NULL);
-            perror("execve");
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            waitpid(pid, &status, 0);
-        }
-    }
+		if (args[0] == NULL)
+			continue;
+		if (strcmp(args[0], "exit") == 0)
+			break;
 
-    free(line);
-    return (0);
+		/* find command in PATH */
+		cmd_path = NULL;
+		path = getenv("PATH");
+		if (path != NULL)
+		{
+			path_copy = strdup(path);
+			if (path_copy == NULL)
+				continue;
+
+			token = strtok(path_copy, ":");
+			while (token != NULL)
+			{
+				char temp[512];
+
+				/* build candidate: token + "/" + cmd */
+				snprintf(temp, sizeof(temp), "%s/%s", token, args[0]);
+				if (access(temp, X_OK) == 0)
+				{
+					cmd_path = strdup(temp);
+					break;
+				}
+				token = strtok(NULL, ":");
+			}
+			free(path_copy);
+		}
+
+		/* if not found in PATH, try as given (absolute/relative) */
+		if (cmd_path == NULL && access(args[0], X_OK) == 0)
+			cmd_path = strdup(args[0]);
+
+		if (cmd_path == NULL)
+		{
+			dprintf(STDERR_FILENO, "%s: command not found\n", args[0]);
+			continue;
+		}
+
+		pid = fork();
+		if (pid == -1)
+		{
+			perror("fork");
+			free(cmd_path);
+			continue;
+		}
+		if (pid == 0)
+		{
+			execve(cmd_path, args, environ);
+			perror("execve");
+			_exit(127);
+		}
+		waitpid(pid, &status, 0);
+		free(cmd_path);
+	}
+
+	free(line);
+	return 0;
 }
 
