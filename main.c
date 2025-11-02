@@ -1,5 +1,14 @@
 #include "shell.h"
 
+static void print_not_found(const char *s)
+{
+	if (s)
+	{
+		write(STDERR_FILENO, s, strlen(s));
+		write(STDERR_FILENO, ": not found\n", 12);
+	}
+}
+
 int run_command(char **argv)
 {
 	pid_t pid;
@@ -12,7 +21,7 @@ int run_command(char **argv)
 	path = find_in_path(argv[0]);
 	if (!path)
 	{
-		dprintf(STDERR_FILENO, "%s: command not found\n", argv[0]);
+		print_not_found(argv[0]);
 		return (127);
 	}
 
@@ -30,6 +39,7 @@ int run_command(char **argv)
 		_exit(126);
 	}
 	free(path);
+
 	if (waitpid(pid, &status, 0) == -1)
 	{
 		perror("waitpid");
@@ -56,7 +66,7 @@ int main(void)
 
 		r = getline(&line, &n, stdin);
 		if (r == -1)
-			break; /* Ctrl+D or EOF */
+			break;
 
 		if (r > 1)
 		{
@@ -81,3 +91,4 @@ int main(void)
 	free(line);
 	return (0);
 }
+
