@@ -1,83 +1,74 @@
-/**
- * @file simple_shell.c
- * @author Raghad Naseef
- * @email naseefraghad@gmail.com
- * @brief Simple shell (task 0.2): handle command lines with arguments.
- *
- * Requirements covered:
- * - Display a prompt and wait for user input.
- * - Execute commands given with a full path (e.g., /bin/ls -l /tmp).
- * - No handling of PATH yet (that is for later tasks).
- * - No separators, no pipes, no redirections.
- */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#include "main.h"
-
-int main(void)
+int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
 {
-	char *line = NULL;
-	size_t len = 0;
-	ssize_t nread;
-	char *argv[128];
-	pid_t pid;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t nread;
+    char *args[64];
+    pid_t pid;
+    int status;
+    size_t i;
+    char *tok;
 
-	while (1)
-	{
-		/* print prompt */
-		if (isatty(STDIN_FILENO))
-			write(STDOUT_FILENO, "#cisfun$ ", 9);
+    while (1)
+    {
+        /* show prompt only if in interactive mode */
+        if (isatty(STDIN_FILENO))
+            write(STDOUT_FILENO, "#cisfun$ ", 9);
 
-		/* read input line */
-		nread = getline(&line, &len, stdin);
-		if (nread == -1) /* EOF (Ctrl+D) or error */
-		{
-			if (isatty(STDIN_FILENO))
-				write(STDOUT_FILENO, "\n", 1);
-			break;
-		}
+        /* read user input */
+        nread = getline(&line, &len, stdin);
+        if (nread == -1)
+        {
+            if (isatty(STDIN_FILENO))
+                write(STDOUT_FILENO, "\n", 1);
+            break;
+        }
 
-		/* strip trailing newline */
-		if (nread > 0 && line[nread - 1] == '\n')
-			line[nread - 1] = '\0';
+        /* remove trailing newline */
+        if (nread > 0 && line[nread - 1] == '\n')
+            line[nread - 1] = '\0';
 
-		/* tokenize into argv */
-		size_t i = 0;
-		char *tok = strtok(line, " \t");
-		while (tok && i + 1 < sizeof(argv) / sizeof(argv[0]))
-		{
-			argv[i++] = tok;
-			tok = strtok(NULL, " \t");
-		}
-		argv[i] = NULL;
+        /* tokenize input line */
+        i = 0;
+        tok = strtok(line, " \t");
+        while (tok != NULL && i < 63)
+        {
+            args[i++] = tok;
+            tok = strtok(NULL, " \t");
+        }
+        args[i] = NULL;
 
-		/* empty line => show prompt again */
-		if (argv[0] == NULL)
-			continue;
+        /* if empty command, continue */
+        if (args[0] == NULL)
+            continue;
 
-		/* fork and exec */
-		pid = fork();
-		if (pid == -1)
-		{
-			perror("fork");
-			continue;
-		}
-		if (pid == 0)
-		{
-			/* child: exec with provided absolute/relative path */
-			execve(argv[0], argv, environ);
-			perror("Error"); /* only reached if execve fails */
-			_exit(127);
-		}
-		else
-		{
-			/* parent: wait for child */
-			int status;
-			if (waitpid(pid, &status, 0) == -1)
-				perror("waitpid");
-			(void)status;
-		}
-	}
+        /* fork and execute */
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            continue;
+        }
+        if (pid == 0)
+        {
+            execve(args[0], args, NULL);
+            perror("execve");
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            waitpid(pid, &status, 0);
+        }
+    }
 
-	free(line);
-	return 0;
+    free(line);
+    return (0);
 }
+
