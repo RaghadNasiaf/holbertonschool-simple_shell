@@ -1,0 +1,7 @@
+.TH hsh 1 "Simple Shell" "Holberton" "User Commands"
+.SH NAME
+hsh \- simple UNIX command interpreter
+.SH DESCRIPTION
+Minimal shell project (man placeholder for task 0).
+.SH AUTHOR
+Raghad Naseef <naseefraghad@gmail.com>
