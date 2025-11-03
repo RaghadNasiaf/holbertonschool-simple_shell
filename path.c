@@ -1,67 +1,89 @@
 #include "shell.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 /**
- * get_env_value - retrieves an environment variable directly from environ
- * @name: variable name (e.g. "PATH")
- * Return: pointer to value or NULL if not found
+ * get_env_value - returns value of an environment variable by scanning environ
+ * @name: var name (e.g. "PATH")
+ * Return: pointer into environ string (do not free) or NULL
  */
 char *get_env_value(const char *name)
 {
-	size_t n = strlen(name);
-	char **env;
+	size_t n;
+	char **p;
 
-	for (env = environ; *env; env++)
+	if (!name)
+		return (NULL);
+	n = strlen(name);
+	for (p = environ; *p; p++)
 	{
-		if (strncmp(*env, name, n) == 0 && (*env)[n] == '=')
-			return (*env + n + 1);
+        /* NAME=VALUE */
+		if (strncmp(*p, name, n) == 0 && (*p)[n] == '=')
+			return (*p + n + 1);
 	}
 	return (NULL);
 }
 
 /**
- * build_command_path - builds the full path for a command using PATH
+ * find_executable - locate executable using PATH or direct path
  * @cmd: command name
- * Return: pointer to full path (malloc’d), or NULL if not found
+ * @fullpath: out pointer to malloc'd full path
+ * Return: 0 on success, -1 not found/error
  */
-char *build_command_path(const char *cmd)
+int find_executable(const char *cmd, char **fullpath)
 {
-	char *path_value, *path_copy, *dir, *full_path;
-	size_t len;
+	char *path, *buf, *save, *tok;
+	size_t dlen, clen;
 
-	if (cmd == NULL)
-		return (NULL);
+	if (!cmd || !*cmd || !fullpath)
+		return (-1);
 
-	path_value = get_env_value("PATH");
-	if (!path_value)
-		return (NULL);
-
-	path_copy = strdup(path_value);
-	if (!path_copy)
-		return (NULL);
-
-	dir = strtok(path_copy, ":");
-	while (dir)
+	/* إذا فيه '/' نتعامل معه كمسار مباشر */
+	if (strchr(cmd, '/'))
 	{
-		len = strlen(dir) + strlen(cmd) + 2;
-		full_path = malloc(len);
-		if (!full_path)
+		if (access(cmd, X_OK) == 0)
 		{
-			free(path_copy);
-			return (NULL);
+			*fullpath = strdup_safe(cmd);
+			return (*fullpath ? 0 : -1);
 		}
-		sprintf(full_path, "%s/%s", dir, cmd);
-		if (access(full_path, X_OK) == 0)
-		{
-			free(path_copy);
-			return (full_path);
-		}
-		free(full_path);
-		dir = strtok(NULL, ":");
+		return (-1);
 	}
-	free(path_copy);
-	return (NULL);
+
+	path = get_env_value("PATH");
+	if (!path)
+		return (-1);
+
+	buf = strdup_safe(path);
+	if (!buf)
+		return (-1);
+
+	clen = strlen(cmd);
+
+	for (tok = strtok_r(buf, ":", &save); tok; tok = strtok_r(NULL, ":", &save))
+	{
+		char *fp;
+		dlen = strlen(tok);
+
+		/* alloc: dir + '/' + cmd + '\0' */
+		fp = malloc(dlen + 1 + clen + 1);
+		if (!fp)
+		{
+			free(buf);
+			return (-1);
+		}
+
+		memcpy(fp, tok, dlen);
+		fp[dlen] = '/';
+		memcpy(fp + dlen + 1, cmd, clen);
+		fp[dlen + 1 + clen] = '\0';
+
+		if (access(fp, X_OK) == 0)
+		{
+			free(buf);
+			*fullpath = fp;
+			return (0);
+		}
+		free(fp);
+	}
+	free(buf);
+	return (-1);
 }
 
