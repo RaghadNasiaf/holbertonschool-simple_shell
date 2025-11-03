@@ -1,21 +1,19 @@
 CC      = gcc
 CFLAGS  = -Wall -Werror -Wextra -pedantic -std=gnu89
-SRC     = shell.c path.c exec.c utils.c
+SRC     = shell.c exec.c path.c utils.c
 OBJ     = $(SRC:.c=.o)
-BIN     = hsh
+NAME    = hsh
 
-all: $(BIN)
+all: $(NAME)
 
-$(BIN): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(BIN)
+$(NAME): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 
 clean:
 	rm -f $(OBJ)
 
 fclean: clean
-	rm -f $(BIN)
+	rm -f $(NAME)
 
 re: fclean all
-
-.PHONY: all clean fclean re
 
