@@ -1,150 +1,55 @@
 #include "shell.h"
 
-/* safe strdup using malloc */
+/**
+ * strdup_safe - duplicate a string safely
+ * @s: string to duplicate
+ * Return: pointer to new string or NULL
+ */
 char *strdup_safe(const char *s)
 {
-	size_t n;
-	char *p;
+	size_t len;
+	char *dup;
 
 	if (!s)
 		return (NULL);
-	n = strlen(s) + 1;
-	p = malloc(n);
-	if (!p)
+	len = strlen(s);
+	dup = malloc(len + 1);
+	if (!dup)
 		return (NULL);
-	memcpy(p, s, n);
-	return (p);
+	memcpy(dup, s, len + 1);
+	return (dup);
 }
 
-/* simple tokenizer: splits by spaces/tabs/newlines */
-char **tokenize(char *line, int *argc)
+/**
+ * is_blank - check if string is empty or only spaces/tabs/newlines
+ * @s: input string
+ * Return: 1 if blank, 0 otherwise
+ */
+int is_blank(const char *s)
 {
-	char *tok, **argv = NULL;
-	size_t cap = 0, i;
-	const char *delim = " \t\r\n";
-
-	if (!argc)
-		return (NULL);
-	*argc = 0;
-
-	tok = strtok(line, delim);
-	while (tok)
+	if (!s)
+		return (1);
+	while (*s)
 	{
-		if ((size_t)(*argc + 1) >= cap)
-		{
-			size_t new_cap = cap ? cap * 2 : 8;
-			char **tmp = malloc(new_cap * sizeof(*tmp));
-			if (!tmp)
-			{
-				free_tokens(argv);
-				return (NULL);
-			}
-			for (i = 0; i < (size_t)*argc; i++)
-				tmp[i] = argv ? argv[i] : NULL;
-			free(argv);
-			argv = tmp;
-			cap = new_cap;
-		}
-
-		argv[*argc] = strdup_safe(tok);
-		if (!argv[*argc])
-		{
-			free_tokens(argv);
-			return (NULL);
-		}
-		(*argc)++;
-		tok = strtok(NULL, delim);
+		if (*s != ' ' && *s != '\t' && *s != '\n')
+			return (0);
+		s++;
 	}
-
-	if (!argv)
-	{
-		argv = malloc(2 * sizeof(*argv));
-		if (!argv)
-			return (NULL);
-		*argc = 0;
-	}
-	argv[*argc] = NULL;
-	return (argv);
+	return (1);
 }
 
-/* free array of tokens */
+/**
+ * free_tokens - free array of strings
+ * @argv: array of tokens
+ */
 void free_tokens(char **argv)
 {
-	int i;
+	size_t i;
 
 	if (!argv)
 		return;
 	for (i = 0; argv[i]; i++)
 		free(argv[i]);
 	free(argv);
-}
-
-/* duplicate value of an env var by scanning environ (no getenv) */
-char *dup_env_value(const char *name)
-{
-	size_t namelen;
-	int i;
-
-	if (!name)
-		return (NULL);
-	namelen = strlen(name);
-
-	for (i = 0; environ && environ[i]; i++)
-	{
-		if (strncmp(environ[i], name, namelen) == 0 && environ[i][namelen] == '=')
-			return (strdup_safe(environ[i] + namelen + 1));
-	}
-	return (NULL);
-}
-
-/* check if path is executable */
-static int is_executable(const char *path)
-{
-	struct stat st;
-
-	if (!path)
-		return (0);
-	if (stat(path, &st) == -1)
-		return (0);
-	return (access(path, X_OK) == 0);
-}
-
-/* search cmd in PATH, returns malloc'ed full path or NULL */
-char *find_in_path(const char *cmd)
-{
-	char *path_copy, *dir, *full;
-	size_t len;
-
-	if (!cmd || !*cmd)
-		return (NULL);
-
-	if (strchr(cmd, '/'))
-		return (is_executable(cmd) ? strdup_safe(cmd) : NULL);
-
-	path_copy = dup_env_value("PATH");
-	if (!path_copy)
-		return (NULL);
-
-	dir = strtok(path_copy, ":");
-	while (dir)
-	{
-		len = strlen(dir) + 1 + strlen(cmd) + 1;
-		full = malloc(len);
-		if (!full)
-		{
-			free(path_copy);
-			return (NULL);
-		}
-		snprintf(full, len, "%s/%s", dir, cmd);
-		if (is_executable(full))
-		{
-			free(path_copy);
-			return (full);
-		}
-		free(full);
-		dir = strtok(NULL, ":");
-	}
-	free(path_copy);
-	return (NULL);
 }
 

@@ -12,15 +12,21 @@
 
 extern char **environ;
 
-/* utils */
+/* utils.c */
 char *strdup_safe(const char *s);
-char **tokenize(char *line, int *argc);
+int is_blank(const char *s);
 void free_tokens(char **argv);
-char *dup_env_value(const char *name);
-char *find_in_path(const char *cmd);
 
-/* core */
-int run_command(char **argv);
+/* path.c */
+char *get_env_value(const char *name);
+int find_executable(const char *cmd, char **fullpath);
+
+/* exec.c */
+int run_command(char **argv, const char *progname);
+
+/* shell.c */
+char **tokenize(char *line);
+int main(int argc, char **argv);
 
 #endif /* SHELL_H */
 

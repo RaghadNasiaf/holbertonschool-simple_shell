@@ -1,8 +1,8 @@
-CC=gcc
-CFLAGS=-Wall -Werror -Wextra -pedantic -std=gnu89
-SRC=main.c utils.c
-OBJ=$(SRC:.c=.o)
-BIN=simple_shell
+CC      = gcc
+CFLAGS  = -Wall -Werror -Wextra -pedantic -std=gnu89
+SRC     = shell.c path.c exec.c utils.c
+OBJ     = $(SRC:.c=.o)
+BIN     = hsh
 
 all: $(BIN)
 
@@ -16,3 +16,6 @@ fclean: clean
 	rm -f $(BIN)
 
 re: fclean all
+
+.PHONY: all clean fclean re
+
