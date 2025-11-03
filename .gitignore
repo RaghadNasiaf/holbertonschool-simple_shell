@@ -1,4 +1,4 @@
+hsh
 *.o
-*.swp
-*.swo
-simple_shell
+*~
+.DS_Store
