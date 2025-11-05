@@ -13,7 +13,6 @@
 extern char **environ;
 
 #define MAX_ARGS 64
-#define BUFFER_SIZE 1024
 
 /* Function prototypes */
 void display_prompt(void);
@@ -22,6 +21,6 @@ char **parse_input(char *input);
 int execute_command(char **args);
 char *find_command(char *command);
 int command_exists(char *command);
-void handle_signal(int sig);
+char *_getenv(const char *name);
 
 #endif
