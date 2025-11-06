@@ -6,7 +6,7 @@
 void display_prompt(void)
 {
 if (isatty(STDIN_FILENO))
-write(STDOUT_FILENO, "$ ", 2);
+write(STDOUT_FILENO, ":) ", 3);
 }
 
 /**
@@ -87,18 +87,90 @@ free(args);
 }
 
 /**
-* print_environment - Prints the current environment
+* _getenv - Custom getenv implementation
+* @name: Environment variable name
+*
+* Return: Value of environment variable or NULL
 */
-void print_environment(void)
+char *_getenv(const char *name)
 {
 int i = 0;
+size_t name_len = strlen(name);
 
 while (environ[i])
 {
-write(STDOUT_FILENO, environ[i], strlen(environ[i]));
-write(STDOUT_FILENO, "\n", 1);
+if (strncmp(environ[i], name, name_len) == 0 && environ[i][name_len] == '=')
+return (environ[i] + name_len + 1);
 i++;
 }
+return (NULL);
+}
+
+/**
+* command_exists - Checks if a command exists and is executable
+* @command: Command to check
+*
+* Return: 1 if exists and executable, 0 otherwise
+*/
+int command_exists(char *command)
+{
+struct stat st;
+
+if (stat(command, &st) == 0 && access(command, X_OK) == 0)
+return (1);
+return (0);
+}
+
+/**
+* find_command - Finds command in PATH
+* @command: Command to find
+*
+* Return: Full path to command, or NULL if not found
+*/
+char *find_command(char *command)
+{
+char *path, *path_copy, *dir, *full_path = NULL;
+struct stat st;
+
+if (!command)
+return (NULL);
+
+/* If command contains '/', check directly */
+if (strchr(command, '/'))
+{
+if (command_exists(command))
+return (strdup(command));
+return (NULL);
+}
+
+/* Get PATH from environ */
+path = _getenv("PATH");
+if (!path)
+return (NULL);
+
+path_copy = strdup(path);
+if (!path_copy)
+return (NULL);
+
+dir = strtok(path_copy, ":");
+while (dir && !full_path)
+{
+full_path = malloc(strlen(dir) + strlen(command) + 2);
+if (!full_path)
+break;
+
+sprintf(full_path, "%s/%s", dir, command);
+
+if (stat(full_path, &st) == 0 && access(full_path, X_OK) == 0)
+break;  /* Found it! */
+
+free(full_path);
+full_path = NULL;
+dir = strtok(NULL, ":");
+}
+
+free(path_copy);
+return (full_path);
 }
 
 /**
@@ -111,15 +183,28 @@ int execute_command(char **args)
 {
 pid_t pid;
 int status;
-struct stat st;
+char *full_path = NULL;
 
 if (!args || !args[0])
 return (0);
 
-/* Check if command exists */
-if (stat(args[0], &st) == -1)
+/* Find the command - check PATH if needed */
+if (strchr(args[0], '/'))
 {
-write(STDERR_FILENO, "./hsh: 1: ", 10);
+/* Command with path */
+if (command_exists(args[0]))
+full_path = strdup(args[0]);
+}
+else
+{
+/* Command without path - search in PATH */
+full_path = find_command(args[0]);
+}
+
+/* Check if command exists before forking */
+if (!full_path)
+{
+write(STDERR_FILENO, "./shell_0.3: 1: ", 16);
 write(STDERR_FILENO, args[0], strlen(args[0]));
 write(STDERR_FILENO, ": not found\n", 12);
 return (127);
@@ -129,11 +214,12 @@ pid = fork();
 if (pid == 0)
 {
 /* Child process */
-if (execve(args[0], args, environ) == -1)
+if (execve(full_path, args, environ) == -1)
 {
-write(STDERR_FILENO, "./hsh: 1: ", 10);
+write(STDERR_FILENO, "./shell_0.3: 1: ", 16);
 write(STDERR_FILENO, args[0], strlen(args[0]));
 write(STDERR_FILENO, ": not found\n", 12);
+free(full_path);
 exit(127);
 }
 }
@@ -141,6 +227,7 @@ else if (pid > 0)
 {
 /* Parent process - wait for child to complete */
 wait(&status);
+free(full_path);
 
 if (WIFEXITED(status))
 return (WEXITSTATUS(status));
@@ -148,6 +235,7 @@ return (WEXITSTATUS(status));
 else
 {
 perror("fork");
+free(full_path);
 return (1);
 }
 

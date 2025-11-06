@@ -20,6 +20,8 @@ char *read_input(void);
 char **parse_input(char *input);
 int execute_command(char **args);
 void free_args(char **args);
-void print_environment(void);
+char *_getenv(const char *name);
+char *find_command(char *command);
+int command_exists(char *command);
 
 #endif
