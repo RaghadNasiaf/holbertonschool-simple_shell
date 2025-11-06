@@ -90,7 +90,7 @@ free(args);
 * execute_command - Executes a command with arguments
 * @args: Command and arguments
 *
-* Return: 1 to continue, 0 to exit
+* Return: Exit status of the command
 */
 int execute_command(char **args)
 {
@@ -99,10 +99,6 @@ int status;
 struct stat st;
 
 if (!args || !args[0])
-return (1);
-
-/* Handle exit built-in command */
-if (strcmp(args[0], "exit") == 0)
 return (0);
 
 /* Check if command exists */
@@ -111,7 +107,7 @@ if (stat(args[0], &st) == -1)
 write(STDERR_FILENO, "./hsh: 1: ", 10);
 write(STDERR_FILENO, args[0], strlen(args[0]));
 write(STDERR_FILENO, ": not found\n", 12);
-return (1);
+return (127);
 }
 
 pid = fork();
@@ -130,12 +126,15 @@ else if (pid > 0)
 {
 /* Parent process - wait for child to complete */
 wait(&status);
+
+if (WIFEXITED(status))
+return (WEXITSTATUS(status));
 }
 else
 {
-/* Fork failed */
 perror("fork");
+return (1);
 }
 
-return (1);
+return (0);
 }

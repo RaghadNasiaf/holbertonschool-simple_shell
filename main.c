@@ -3,13 +3,14 @@
 /**
 * main - Simple shell entry point
 *
-* Return: Always 0
+* Return: Exit status of the last command
 */
 int main(void)
 {
 char *input = NULL;
 char **args = NULL;
-int status = 1;
+int status = 0;
+int last_status = 0;
 
 signal(SIGINT, SIG_IGN);
 
@@ -34,11 +35,20 @@ free_args(args);
 continue;
 }
 
+/* Check if it's exit command before executing */
+if (strcmp(args[0], "exit") == 0)
+{
+free_args(args);
+break;
+}
+
 status = execute_command(args);
 free_args(args);
 args = NULL;
 
-} while (status);
+last_status = status;  /* Always store the last command status */
 
-return (0);
+} while (1);
+
+return (last_status);
 }
