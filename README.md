@@ -61,10 +61,9 @@ This project is a collaboration between Holberton School students to create a si
 ```bash
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
 
-Usage:
+## Usage:
 
 Interactive Mode
-bash
 ./hsh
 The shell displays a prompt ($) and waits for user input. Commands are executed and the prompt reappears after completion.
 
@@ -73,10 +72,9 @@ bash
 echo "command" | ./hsh
 The shell reads commands from standard input without displaying a prompt.
 
-Examples:
+## Examples:
 
 Basic Usage
-bash
 $ ./hsh
 $ /bin/ls
 AUTHORS  README.md  hsh  main.c  shell.c  shell.h
@@ -88,8 +86,7 @@ $ pwd
 /home/user/holbertonschool-simple_shell
 $ exit
 
-Built-in Commands
-bash
+## Built-in Commands
 $ ./hsh
 $ env
 USER=username
@@ -98,29 +95,24 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 ...
 $ exit
 
-Error Handling
-bash
+## Error Handling
 $ ./hsh
 $ nonexistentcommand
 ./hsh: 1: nonexistentcommand: not found
 $ /bin/nonexistent
 ./hsh: 1: /bin/nonexistent: not found
 
-Built-in Commands
+## Built-in Commands
 exit
 Exit the shell without arguments.
 
-bash
 $ exit
 env
 Print all environment variables.
 
-bash
 $ env
 
-File Structure
-
-text
+## File Structure:
 holbertonschool-simple_shell/
 ├── AUTHORS              # List of contributors
 ├── README.md           # Project documentation
@@ -129,8 +121,7 @@ holbertonschool-simple_shell/
 ├── main.c              # Main program and shell loop
 └── shell.c             # Core shell functionality
 
-Functions
-
+Functions:
 main.c
 main(): Entry point and main shell loop
 
@@ -157,11 +148,10 @@ print_error(): Prints formatted error messages
 
 print_environment(): Prints environment variables
 
-Environment
-
+## Environment:
 The shell inherits environment variables from the parent process and can access them through the global environ variable.
 
-Error Handling
+## Error Handling
 
 Commands not found: ./hsh: 1: command: not found (exit status 127)
 
@@ -171,13 +161,13 @@ Empty input: Continues without error
 
 EOF (Ctrl+D): Exits cleanly
 
-Signal Handling
+## Signal Handling
 
 Ctrl+C: Ignored (shows new prompt)
 
 Ctrl+D: Exits shell
 
-Memory Management
+## Memory Management
 
 All dynamically allocated memory is properly freed
 
@@ -185,7 +175,7 @@ No memory leaks (verified with valgrind)
 
 Safe string operations
 
-Limitations
+## Limitations
 
 No pipes (|) support
 
@@ -199,14 +189,14 @@ No command history
 
 No tab completion
 
-Authors
+## Authors:
 
 See AUTHORS file for complete list of contributors.
 
-Manual
+## Manual:
 
 View the manual with: man ./man_1_simple_shell
 
-License
+## License:
 
 This project is part of the Holberton School curriculum.
