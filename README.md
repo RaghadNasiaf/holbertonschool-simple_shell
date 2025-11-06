@@ -8,10 +8,10 @@ This project is a collaboration between Holberton School students to create a si
 ## Features
 - Display prompt and wait for user input
 - Execute commands with arguments
-- Handle built-in commands (`exit`, `env`)
+- Handle built-in commands (exit, env)
 - Search for executables in PATH
 - Handle end of file (Ctrl+D)
-- Error handling that matches `/bin/sh`
+- Error handling that matches /bin/sh
 - Both interactive and non-interactive modes
 - Proper exit status handling
 - Memory leak free
@@ -19,9 +19,9 @@ This project is a collaboration between Holberton School students to create a si
 ## Project Tasks Completed
 
 ### Task 0: README, man, AUTHORS
-- **README.md**: Project documentation
-- **man_1_simple_shell**: Manual page for the shell
-- **AUTHORS**: List of project contributors
+- README.md: Project documentation
+- man_1_simple_shell: Manual page for the shell
+- AUTHORS: List of project contributors
 
 ### Task 1: Betty would be proud
 - Code follows Betty style guidelines
@@ -38,7 +38,7 @@ This project is a collaboration between Holberton School students to create a si
 
 ### Task 3: Simple shell 0.2
 - Handle command lines with arguments
-- Execute commands like `ls -l /tmp`
+- Execute commands like ls -l /tmp
 - Improved tokenization for multiple arguments
 
 ### Task 4: Simple shell 0.3
@@ -48,28 +48,33 @@ This project is a collaboration between Holberton School students to create a si
 - Handle empty PATH correctly
 
 ### Task 5: Simple shell 0.4
-- Implement `exit` built-in command
+- Implement exit built-in command
 - Exit without arguments
 - Proper exit status handling
 
 ### Task 6: Simple shell 1.0
-- Implement `env` built-in command
+- Implement env built-in command
 - Print current environment variables
 - Built-in returns status 0
 
 ## Compilation
-```bash
+
 gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
-Usage
-Interactive Mode
-```bash
+
+## Usage
+
+### Interactive Mode
+
 ./hsh
-Non-interactive Mode
-```bash
+
+### Non-interactive Mode
+
 echo "command" | ./hsh
-Examples
-Basic Usage
-```bash
+
+## Examples
+
+### Basic Usage
+
 $ ./hsh
 $ /bin/ls
 AUTHORS  README.md  hsh  main.c  shell.c  shell.h
@@ -80,8 +85,9 @@ total 0
 $ pwd
 /home/user/holbertonschool-simple_shell
 $ exit
-Built-in Commands
-```bash
+
+### Built-in Commands
+
 $ ./hsh
 $ env
 USER=username
@@ -89,26 +95,29 @@ HOME=/home/username
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 ...
 $ exit
-Error Handling
-```bash
+
+### Error Handling
+
 $ ./hsh
 $ nonexistentcommand
 ./hsh: 1: nonexistentcommand: not found
 $ /bin/nonexistent
 ./hsh: 1: /bin/nonexistent: not found
-Built-in Commands
-exit
+
+## Built-in Commands
+
+### exit
 Exit the shell without arguments.
 
-```bash
 $ exit
-env
+
+### env
 Print all environment variables.
 
-```bash
 $ env
-File Structure
-```text
+
+## File Structure
+
 holbertonschool-simple_shell/
 ├── AUTHORS              # List of contributors
 ├── README.md           # Project documentation
@@ -116,75 +125,56 @@ holbertonschool-simple_shell/
 ├── shell.h             # Header file with prototypes
 ├── main.c              # Main program and shell loop
 └── shell.c             # Core shell functionality
-Functions
-main.c
-main(): Entry point and main shell loop
 
-Signal handling for Ctrl+C
+## Functions
 
-shell.c
-display_prompt(): Displays shell prompt
+### main.c
+- main(): Entry point and main shell loop
+- Signal handling for Ctrl+C
 
-read_input(): Reads input from stdin
+### shell.c
+- display_prompt(): Displays shell prompt
+- read_input(): Reads input from stdin
+- parse_input(): Splits input into tokens
+- execute_command(): Executes commands with PATH resolution
+- free_args(): Frees memory allocated for arguments
+- _getenv(): Custom getenv implementation
+- find_command(): Searches for commands in PATH
+- command_exists(): Checks if command exists and is executable
+- print_error(): Prints formatted error messages
+- print_environment(): Prints environment variables
 
-parse_input(): Splits input into tokens
-
-execute_command(): Executes commands with PATH resolution
-
-free_args(): Frees memory allocated for arguments
-
-_getenv(): Custom getenv implementation
-
-find_command(): Searches for commands in PATH
-
-command_exists(): Checks if command exists and is executable
-
-print_error(): Prints formatted error messages
-
-print_environment(): Prints environment variables
-
-Environment
+## Environment
 The shell inherits environment variables from the parent process and can access them through the global environ variable.
 
-Error Handling
-Commands not found: ./hsh: 1: command: not found (exit status 127)
+## Error Handling
+- Commands not found: ./hsh: 1: command: not found (exit status 127)
+- Commands that fail: Returns the command's exit status
+- Empty input: Continues without error
+- EOF (Ctrl+D): Exits cleanly
 
-Commands that fail: Returns the command's exit status
+## Signal Handling
+- Ctrl+C: Ignored (shows new prompt)
+- Ctrl+D: Exits shell
 
-Empty input: Continues without error
+## Memory Management
+- All dynamically allocated memory is properly freed
+- No memory leaks (verified with valgrind)
+- Safe string operations
 
-EOF (Ctrl+D): Exits cleanly
+## Limitations
+- No pipes (|) support
+- No redirections (>, <, >>) support
+- No logical operators (&&, ||) support
+- No variable expansion
+- No command history
+- No tab completion
 
-Signal Handling
-Ctrl+C: Ignored (shows new prompt)
-
-Ctrl+D: Exits shell
-
-Memory Management
-All dynamically allocated memory is properly freed
-
-No memory leaks (verified with valgrind)
-
-Safe string operations
-
-Limitations
-No pipes (|) support
-
-No redirections (>, <, >>) support
-
-No logical operators (&&, ||) support
-
-No variable expansion
-
-No command history
-
-No tab completion
-
-Authors
+## Authors
 See AUTHORS file for complete list of contributors.
 
-Manual
+## Manual
 View the manual with: man ./man_1_simple_shell
 
-License
+## License
 This project is part of the Holberton School curriculum.
