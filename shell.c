@@ -174,6 +174,21 @@ return (full_path);
 }
 
 /**
+* print_error - Prints error message with shell name
+* @command: Command that failed
+*/
+void print_error(char *command)
+{
+char *shell_name = "hsh";
+
+write(STDERR_FILENO, "./", 2);
+write(STDERR_FILENO, shell_name, strlen(shell_name));
+write(STDERR_FILENO, ": 1: ", 5);
+write(STDERR_FILENO, command, strlen(command));
+write(STDERR_FILENO, ": not found\n", 12);
+}
+
+/**
 * execute_command - Executes a command with arguments
 * @args: Command and arguments
 *
@@ -204,9 +219,7 @@ full_path = find_command(args[0]);
 /* Check if command exists before forking */
 if (!full_path)
 {
-write(STDERR_FILENO, "./shell_0.3: 1: ", 16);
-write(STDERR_FILENO, args[0], strlen(args[0]));
-write(STDERR_FILENO, ": not found\n", 12);
+print_error(args[0]);
 return (127);
 }
 
@@ -216,9 +229,7 @@ if (pid == 0)
 /* Child process */
 if (execve(full_path, args, environ) == -1)
 {
-write(STDERR_FILENO, "./shell_0.3: 1: ", 16);
-write(STDERR_FILENO, args[0], strlen(args[0]));
-write(STDERR_FILENO, ": not found\n", 12);
+print_error(args[0]);
 free(full_path);
 exit(127);
 }
