@@ -19,8 +19,6 @@ void display_prompt(void);
 char *read_input(void);
 char **parse_input(char *input);
 int execute_command(char **args);
-char *find_command(char *command);
-int command_exists(char *command);
-char *_getenv(const char *name);
+void free_args(char **args);
 
 #endif

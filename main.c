@@ -1,36 +1,22 @@
 #include "shell.h"
 
 /**
-* handle_signal - Handles Ctrl+C signal
-* @sig: Signal number
-*/
-void handle_signal(int sig)
-{
-(void)sig;
-write(STDOUT_FILENO, "\n", 1);
-display_prompt();
-fflush(stdout);
-}
-
-/**
-* main - Simple shell entry point (Task 3)
+* main - Simple shell entry point
 *
 * Return: Always 0
 */
 int main(void)
 {
-char *input;
-char **args;
+char *input = NULL;
+char **args = NULL;
 int status = 1;
 
-/* Set up signal handling for Ctrl+C */
-signal(SIGINT, handle_signal);
+signal(SIGINT, SIG_IGN);
 
 do {
 display_prompt();
 input = read_input();
 
-/* Handle EOF (Ctrl+D) */
 if (!input)
 {
 if (isatty(STDIN_FILENO))
@@ -39,18 +25,19 @@ break;
 }
 
 args = parse_input(input);
+free(input);
+input = NULL;
+
 if (!args || !args[0])
 {
-free(input);
-if (args)
-free(args);
+free_args(args);
 continue;
 }
 
 status = execute_command(args);
+free_args(args);
+args = NULL;
 
-free(input);
-free(args);
 } while (status);
 
 return (0);
