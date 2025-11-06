@@ -87,6 +87,21 @@ free(args);
 }
 
 /**
+* print_environment - Prints the current environment
+*/
+void print_environment(void)
+{
+int i = 0;
+
+while (environ[i])
+{
+write(STDOUT_FILENO, environ[i], strlen(environ[i]));
+write(STDOUT_FILENO, "\n", 1);
+i++;
+}
+}
+
+/**
 * execute_command - Executes a command with arguments
 * @args: Command and arguments
 *

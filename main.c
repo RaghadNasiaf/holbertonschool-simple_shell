@@ -42,11 +42,20 @@ free_args(args);
 break;
 }
 
+/* Check if it's env command */
+if (strcmp(args[0], "env") == 0)
+{
+print_environment();
+free_args(args);
+last_status = 0;  /* env command returns 0 */
+continue;
+}
+
 status = execute_command(args);
 free_args(args);
 args = NULL;
 
-last_status = status;  /* Always store the last command status */
+last_status = status;  /* Store the last command status */
 
 } while (1);
 
