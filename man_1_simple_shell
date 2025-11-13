@@ -1,0 +1,110 @@
+.TH HSH 1 "Simple Shell Manual"
+.SH NAME
+hsh \- simple shell
+.SH SYNOPSIS
+.B hsh
+.RI [ command ]
+.SH DESCRIPTION
+.B hsh
+is a simple UNIX command interpreter that reads commands from either standard input or command line arguments and executes them.
+
+The shell supports both interactive mode (displaying a prompt and waiting for user input) and non-interactive mode (reading commands from pipes or files).
+
+.SH OPTIONS
+The shell does not accept any command-line options. If a command is provided as an argument, it will be executed and the shell will exit.
+
+.SH INTERACTIVE MODE
+When running in interactive mode,
+.B hsh
+displays a prompt ($) and waits for the user to type a command. The command line always ends with a new line. After the command has been executed, the prompt is displayed again.
+
+.SH NON-INTERACTIVE MODE
+In non-interactive mode,
+.B hsh
+reads commands from standard input without displaying a prompt. This mode is useful for executing scripts or commands from pipes.
+
+.SH COMMANDS
+Commands can be specified as:
+.IP \(bu 3
+Absolute paths (e.g., /bin/ls)
+.IP \(bu 3
+Relative paths (e.g., ./myprogram)
+.IP \(bu 3
+Executables found in the PATH environment variable (e.g., ls, grep)
+
+.SH BUILT-IN COMMANDS
+.TP
+.B exit
+Exit the shell. The optional
+.I status
+argument specifies the exit status (default is 0).
+
+.TP
+.B env
+Print all environment variables.
+
+.SH ENVIRONMENT
+.B hsh
+inherits the environment from its parent process and can modify it using built-in commands.
+
+.SH EXIT STATUS
+.B hsh
+exits with the status of the last command executed. If the exit built-in is used, it exits with the specified status.
+
+.SH EXAMPLES
+To use the shell interactively:
+.PP
+.RS
+.nf
+$ ./hsh
+($) /bin/ls
+file1 file2 file3
+($) exit
+$
+.fi
+.RE
+.PP
+To use the shell non-interactively:
+.PP
+.RS
+.nf
+$ echo "/bin/ls" | ./hsh
+file1 file2 file3
+.fi
+.RE
+.PP
+To execute a command that doesn't exist:
+.PP
+.RS
+.nf
+$ ./hsh
+($) qwerty
+./hsh: 1: qwerty: not found
+($)
+.fi
+.RE
+
+.SH ERROR MESSAGES
+When a command cannot be found,
+.B hsh
+displays an error message in the format:
+.PP
+.RS
+.I ./hsh: 1: command: not found
+.RE
+.PP
+The exact format matches that of
+.BR /bin/sh .
+
+.SH SEE ALSO
+.BR sh (1),
+.BR bash (1)
+
+.SH BUGS
+No known bugs. Report any issues to the Holberton School project repository.
+
+.SH AUTHOR
+Written by Holberton School students as part of the curriculum.
+
+.SH COPYRIGHT
+This is free software: you are free to change and redistribute it.
